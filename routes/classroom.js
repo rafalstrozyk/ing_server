@@ -37,7 +37,7 @@ const getCourse = (auth, resRouter, id) => {
     if (err) {
       resRouter.json({ error: `Bad id or server error: ${err}` });
     } else {
-      resRouter.json({ course: res.data });
+      resRouter.json(res.data);
     }
   });
 };
@@ -48,7 +48,7 @@ const getCourseStudents = (auth, resRouter, id) => {
     if (err) {
       resRouter.json({ error: `Bad id or server error: ${err}` });
     } else {
-      resRouter.json({ students: res.data });
+      resRouter.json(res.data);
     }
   });
 };
@@ -60,7 +60,7 @@ const getCourseTeachers = (auth, resRouter, id) => {
     if (err) {
       resRouter.json({ error: `Bad id or server error: ${err}` });
     } else {
-      resRouter.json({ teachers: res.data });
+      resRouter.json(res.data);
     }
   });
 };
@@ -73,7 +73,7 @@ const getStudent = (auth, resRouter, ids) => {
       if (err) {
         resRouter.json({ error: `Bad id or server error: ${err}` });
       } else {
-        resRouter.json({ student: res.data });
+        resRouter.json(res.data);
       }
     }
   );
@@ -96,9 +96,9 @@ const getCourseWorkList = (auth, resRouter, id) => {
   const classroom = google.classroom({ version: 'v1', auth });
   classroom.courses.courseWork.list({ courseId: id }, (err, res) => {
     if (err) {
-      res.router.json({ error: `Bad id or server error: ${err}` });
+      resRouter.json({ error: `Bad id or server error: ${err}` });
     } else {
-      resRouter.json({ workList: res.data });
+      resRouter.json(res.data);
     }
   });
 };
@@ -233,7 +233,7 @@ router.get('/api/course/work_list', (req, res) => {
     if (req.query.course_id) {
       const decode = jwt.verify(req.cookies.jwt, config.JWTsecret);
       oAuth2Client.setCredentials(decode);
-      getCourseWorkList(decode, res, query.course_id);
+      getCourseWorkList(oAuth2Client, res, req.query.course_id);
     }
   }
 });

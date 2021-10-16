@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const colors = require('colors');
+require('dotenv').config();
 
 const logger = require('morgan');
 const cors = require('cors');
