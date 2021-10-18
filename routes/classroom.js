@@ -110,7 +110,7 @@ const getCourseWorkSubmisionList = (auth, resRouter, ids) => {
       if (err) {
         res.router.json({ error: `Bad id or server error: ${err}` });
       } else {
-        resRouter.json({ workSubmisionList: res.data });
+        resRouter.json(res.data);
       }
     }
   );
@@ -234,6 +234,20 @@ router.get('/api/course/work_list', (req, res) => {
       const decode = jwt.verify(req.cookies.jwt, config.JWTsecret);
       oAuth2Client.setCredentials(decode);
       getCourseWorkList(oAuth2Client, res, req.query.course_id);
+    }
+  }
+});
+
+router.get('/api/course/work_list_submissions', (req, res) => {
+  if (req.cookies.jwt) {
+    console.log('something');
+    if (req.query.course_id && req.query.course_work_id) {
+      const decode = jwt.verify(req.cookies.jwt, config.JWTsecret);
+      oAuth2Client.setCredentials(decode);
+      getCourseWorkSubmisionList(oAuth2Client, res, {
+        courseId: req.query.course_id,
+        courseWorkId: req.query.course_work_id,
+      });
     }
   }
 });
