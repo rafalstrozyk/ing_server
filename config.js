@@ -8,7 +8,10 @@ const config = {
     auth_provider_x509_cert_url: process.env.OAUTH_PROVIDER,
     client_secret: process.env.OAUTH_SECRET,
 
-    redirect_uris: ['http://localhost:3000/login_waiter'],
+    redirect_uris: [
+      'http://localhost:3000/login_waiter',
+      'http://localhost:3000/oauth2callback',
+    ],
     scopes: [
       'https://www.googleapis.com/auth/classroom.courses.readonly',
       'https://www.googleapis.com/auth/classroom.rosters',

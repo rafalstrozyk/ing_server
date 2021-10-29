@@ -1,8 +1,13 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const colors = require('colors');
-require('dotenv').config();
+const config = require('./config');
+const authenticate = require('./genTokenForServer');
+const fs = require('fs-extra');
+
+const tokenFile = './token.json';
 
 const logger = require('morgan');
 const cors = require('cors');
@@ -16,7 +21,7 @@ const app = express();
 // app.use(cors());
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000', 'http://localhost:3000/login'],
     optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
     credentials: true,
   })
@@ -34,6 +39,32 @@ app.use(function (req, res, next) {
     'Origin, X-Requested-With, Content-Type, Accept'
   );
   next();
+});
+
+function createTokenFile() {
+  authenticate()
+    .then((client) => {
+      fs.outputJsonSync(tokenFile, client);
+      console.log(fs.readJsonSync(tokenFile));
+    })
+    .catch(console.error);
+}
+
+fs.readJson(tokenFile, (err, data) => {
+  if (err) {
+    console.error(err);
+    createTokenFile();
+  } else {
+    if (
+      data &&
+      data._clientId === config.oauth2Credentials.client_id &&
+      data._clientSecret === config.oauth2Credentials.client_secret
+    ) {
+      console.log('success load token file!'.blue);
+    } else {
+      createTokenFile();
+    }
+  }
 });
 
 app.use('/', indexRouter);
