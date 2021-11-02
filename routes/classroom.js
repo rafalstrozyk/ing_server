@@ -8,65 +8,8 @@ const getCoursesList = require('../functions/getCoursesList');
 const getCourse = require('../functions/getCourse');
 const getCourseStudents = require('../functions/getCourseStudents');
 const getCourseTeachers = require('../functions/getCourseTeachers');
-const getUserProfile = require('../functions/getUserProfile');
-
-// const getCoursesList = (auth, resRouter) => {
-//   genClassroom(auth).courses.list(
-//     {
-//       pageSize: 10,
-//     },
-//     (err, res) => {
-//       if (err) {
-//         resRouter.json({ error: err });
-//         console.log(`${err}`.red);
-//       } else {
-//         if (res.data.courses && res.data.courses.length) {
-//           console.log('Success get courses!'.green);
-//           resRouter.json({
-//             info: 'Success get courses list!',
-//             courses: res.data.courses,
-//           });
-//         } else {
-//           console.log('No courses found.'.yellow);
-//           resRouter.json({ info: 'No courses found' });
-//         }
-//       }
-//     }
-//   );
-// };
-
-// const getCourse = (auth, resRouter, id) => {
-//   const classroom = google.classroom({ version: 'v1', auth });
-//   classroom.courses.get({ id }, (err, res) => {
-//     if (err) {
-//       resRouter.json({ error: `Bad id or server error: ${err}` });
-//     } else {
-//       resRouter.json(res.data);
-//     }
-//   });
-// };
-
-// const getCourseStudents = (auth, resRouter, id) => {
-//   const classroom = google.classroom({ version: 'v1', auth });
-//   classroom.courses.students.list({ courseId: id }, (err, res) => {
-//     if (err) {
-//       resRouter.json({ error: `Bad id or server error: ${err}` });
-//     } else {
-//       resRouter.json(res.data);
-//     }
-//   });
-// };
-
-// const getCourseTeachers = (auth, resRouter, id) => {
-//   const classroom = google.classroom({ version: 'v1', auth });
-//   classroom.courses.teachers.list({ courseId: id }, (err, res) => {
-//     if (err) {
-//       resRouter.json({ error: `Bad id or server error: ${err}` });
-//     } else {
-//       resRouter.json(res.data);
-//     }
-//   });
-// };
+const getWorkListSubmissions = require('../functions/getWorkListSubmissions');
+const getUserProfileByServer = require('../functions/getUserProfileByServer');
 
 const getStudent = (auth, resRouter, ids) => {
   const classroom = google.classroom({ version: 'v1', auth });
@@ -175,24 +118,6 @@ router.get('/api/courses_list', async (req, res) => {
     console.error(err);
     res.json({ isLogin: false });
   }
-
-  // try {
-  //   const decode = jwt.verify(req.cookies.jwt, config.JWTsecret);
-  //   fs.readJson('./token.json', (err, token) => {
-  //     if (err) console.error(err);
-  //     else {
-  //       oAuth2Client.setCredentials(token.credentials);
-  //       // if (oAuth2Client.verifySignedJwtWithCerts()) {
-  //       //   console.log('good token');
-  //       // } else {
-  //       //   console.log('bad token');
-  //       // }
-  //       getCoursesList(oAuth2Client, res);
-  //     }
-  //   });
-  // } catch (err) {
-  //   res.json({ error: 'your acces token is wrong' });
-  // }
 });
 
 router.get('/api/course', async (req, res) => {
@@ -217,22 +142,6 @@ router.get('/api/course', async (req, res) => {
     console.error(err);
     res.json({ isLogin: false });
   }
-  // if (req.cookies.jwt) {
-  //   if (req.query.course_id) {
-  //     //   try {
-
-  //     getCourse(oAuth2Client, res, req.query.course_id);
-  //     //   console.log(course);
-  //     // res.json({ course });
-  //     //   } catch {
-  //     //     res.json({ error: 'Bad id or server error' });
-  //     //   }
-  //   } else {
-  //     res.json({ info: 'You need give me course id' });
-  //   }
-  // } else {
-  //   res.json({ info: 'Log in plis' });
-  // }
 });
 
 router.get('/api/course/students_list', async (req, res) => {
@@ -250,19 +159,9 @@ router.get('/api/course/students_list', async (req, res) => {
   } catch (err) {
     res.json({ isLogin: false });
   }
-
-  // if (req.cookies.jwt) {
-  //   if (req.query.course_id) {
-  //     oAuth2Client.setCredentials(decode);
-  //     getCourseStudents(oAuth2Client, res, req.query.course_id);
-  //   } else {
-  //     res.json({ info: 'You need give me course id' });
-  //   }
-  // } else {
-  //   res.json({ info: 'Log in plis' });
-  // }
 });
 
+// TODO it is not use
 router.get('/api/course/student', (req, res) => {
   if (req.coockies.jwt) {
     if (req.query.course_id && req.query.user_id) {
@@ -290,21 +189,9 @@ router.get('/api/course/teachers_list', async (req, res) => {
   } catch (err) {
     res.json({ isLogin: false });
   }
-
-  // if (req.cookies.jwt) {
-  //   if (req.query.course_id) {
-  //     const decode = jwt.verify(req.cookies.jwt, config.JWTsecret);
-  //     oAuth2Client.to;
-  //     oAuth2Client.setCredentials(decode);
-  //     // getCourseTeachers(oAuth2Client, res, req.query.course_id);
-  //   } else {
-  //     res.json({ info: 'You need give me course id' });
-  //   }
-  // } else {
-  //   res.json({ info: 'Log in plis' });
-  // }
 });
 
+// TODO it is not use
 router.get('/api/course/student', (req, res) => {
   if (req.coockies.jwt) {
     if (req.query.course_id && req.query.user_id) {
@@ -328,17 +215,41 @@ router.get('/api/course/work_list', (req, res) => {
   }
 });
 
-router.get('/api/course/work_list_submissions', (req, res) => {
-  if (req.cookies.jwt) {
-    console.log('something');
-    if (req.query.course_id && req.query.course_work_id) {
-      const decode = jwt.verify(req.cookies.jwt, config.JWTsecret);
-      oAuth2Client.setCredentials(decode);
-      getCourseWorkSubmisionList(oAuth2Client, res, {
-        courseId: req.query.course_id,
-        courseWorkId: req.query.course_work_id,
-      });
+router.get('/api/course/work_list_submissions', async (req, res) => {
+  try {
+    await jwt.verify(req.cookies.jwt, config.JWTsecret);
+
+    try {
+      const googleCourseWorkListSubmissions = await getWorkListSubmissions(
+        req.query.course_id,
+        req.query.course_work_id
+      );
+
+      // create new array of objects with sorting by assigned grade
+      const CourseWorkListSubmissions =
+        googleCourseWorkListSubmissions.studentSubmissions
+          .map((work) => {
+            return {
+              id: work.id,
+              assignedGrade: work.assignedGrade,
+              userId: work.userId,
+            };
+          })
+          .sort((a, b) =>
+            a.assignedGrade < b.assignedGrade
+              ? 1
+              : b.assignedGrade < a.assignedGrade
+              ? -1
+              : 0
+          );
+
+      res.json({ isLogin: true, rank: CourseWorkListSubmissions });
+    } catch (err) {
+      console.error(err);
+      res.json({ isLogin: true });
     }
+  } catch (err) {
+    res.json({ isLogin: false });
   }
 });
 
