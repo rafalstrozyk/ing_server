@@ -38,7 +38,6 @@ router.get('/auth_callback', async (req, res) => {
           oAuth2Client.setCredentials(token);
           const googleProfile = await getUserProfile(oAuth2Client, 'me');
           console.log(googleProfile);
-          // res.json({ isLogin: true,  });
           res
             .status(200)
             .cookie('jwt', jwt.sign(token, config.JWTsecret))

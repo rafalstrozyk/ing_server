@@ -9,6 +9,7 @@ const getCourse = require('../functions/getCourse');
 const getCourseStudents = require('../functions/getCourseStudents');
 const getCourseTeachers = require('../functions/getCourseTeachers');
 const getWorkListSubmissions = require('../functions/getWorkListSubmissions');
+const getCourseWorkList = require('../functions/getCourseWorkList');
 const getUserProfileByServer = require('../functions/getUserProfileByServer');
 
 const getStudent = (auth, resRouter, ids) => {
@@ -38,16 +39,16 @@ const getTeacher = (auth, resRouter, ids) => {
   );
 };
 
-const getCourseWorkList = (auth, resRouter, id) => {
-  const classroom = google.classroom({ version: 'v1', auth });
-  classroom.courses.courseWork.list({ courseId: id }, (err, res) => {
-    if (err) {
-      resRouter.json({ error: `Bad id or server error: ${err}` });
-    } else {
-      resRouter.json(res.data);
-    }
-  });
-};
+// const getCourseWorkList = (auth, resRouter, id) => {
+//   const classroom = google.classroom({ version: 'v1', auth });
+//   classroom.courses.courseWork.list({ courseId: id }, (err, res) => {
+//     if (err) {
+//       resRouter.json({ error: `Bad id or server error: ${err}` });
+//     } else {
+//       resRouter.json(res.data);
+//     }
+//   });
+// };
 const getCourseWorkSubmisionList = (auth, resRouter, ids) => {
   const classroom = google.classroom({ version: 'v1', auth });
   classroom.courses.courseWork.studentSubmissions.list(
@@ -205,14 +206,31 @@ router.get('/api/course/student', (req, res) => {
   }
 });
 
-router.get('/api/course/work_list', (req, res) => {
-  if (req.cookies.jwt) {
-    if (req.query.course_id) {
-      const decode = jwt.verify(req.cookies.jwt, config.JWTsecret);
-      oAuth2Client.setCredentials(decode);
-      getCourseWorkList(oAuth2Client, res, req.query.course_id);
+router.get('/api/course/work_list', async (req, res) => {
+  try {
+    const decode = await jwt.verify(req.cookies.jwt, config.JWTsecret);
+    oAuth2Client.setCredentials(decode);
+    try {
+      const coursesWorkList = getCourseWorkList(
+        oAuth2Client,
+        req.query.course_id
+      );
+      res.json({ ...coursesWorkList });
+    } catch (err) {
+      console.error(err);
+      res.json({ err });
     }
+  } catch (err) {
+    console.error(err);
+    res.json(err);
   }
+  // if (req.cookies.jwt) {
+  //   if (req.query.course_id) {
+  //     oAuth2Client.setCredentials(decode);
+
+  //     // getCourseWorkList(oAuth2Client, res, req.query.course_id);
+  //   }
+  // }
 });
 
 router.get('/api/course/work_list_submissions', async (req, res) => {
