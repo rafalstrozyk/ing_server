@@ -20,25 +20,38 @@ router.get('/google_login_link', (req, res) => {
   }
 });
 
-router.get('/auth_callback', (req, res) => {
+router.get('/auth_callback', async (req, res) => {
   try {
     if (req.query.error) {
       // The user did not give us permission.
       res.json({ error: 'The user did not give permision' });
       console.log('The user did not give us permission.'.red);
     } else {
-      oAuth2Client.getToken(req.query.query, (err, token) => {
+      await oAuth2Client.getToken(req.query.query, async (err, token) => {
         if (err) {
           console.log(`error: ${err}`.red);
           res.json({ error: 'oAuth: something went wrong' });
         }
         // create encrypted token cooki for client
-        res.status(200).cookie('jwt', jwt.sign(token, config.JWTsecret)).json({
-          isLogin: true,
-          create_cookie: true,
-          info: 'succes login user!',
-        });
-        console.log('succes login user!'.green);
+        try {
+          console.log(token);
+          oAuth2Client.setCredentials(token);
+          const googleProfile = await getUserProfile(oAuth2Client, 'me');
+          console.log(googleProfile);
+          // res.json({ isLogin: true,  });
+          res
+            .status(200)
+            .cookie('jwt', jwt.sign(token, config.JWTsecret))
+            .json({
+              isLogin: true,
+              ...googleProfile,
+              create_cookie: true,
+              info: 'succes login user!',
+            });
+          console.log('succes login user!'.green);
+        } catch (err) {
+          console.error(err);
+        }
       });
     }
   } catch {
@@ -49,7 +62,7 @@ router.get('/auth_callback', (req, res) => {
 router.get('/user_profile', async (req, res) => {
   try {
     const decode = jwt.verify(req.cookies.jwt, config.JWTsecret);
-
+    console.log(req.cookies);
     oAuth2Client.setCredentials(decode);
     try {
       const googleProfile = await getUserProfile(oAuth2Client, 'me');
