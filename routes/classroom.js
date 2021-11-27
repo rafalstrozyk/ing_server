@@ -11,6 +11,7 @@ const getCourseTeachers = require('../functions/getCourseTeachers');
 const getWorkListSubmissions = require('../functions/getWorkListSubmissions');
 const getCourseWorkList = require('../functions/getCourseWorkList');
 const getUserProfileByServer = require('../functions/getUserProfileByServer');
+const getRankOfCourse = require('../functions/getRankOfCourse');
 
 const getStudent = (auth, resRouter, ids) => {
   const classroom = google.classroom({ version: 'v1', auth });
@@ -211,7 +212,7 @@ router.get('/api/course/work_list', async (req, res) => {
     const decode = await jwt.verify(req.cookies.jwt, config.JWTsecret);
     oAuth2Client.setCredentials(decode);
     try {
-      const coursesWorkList = getCourseWorkList(
+      const coursesWorkList = await getCourseWorkList(
         oAuth2Client,
         req.query.course_id
       );
@@ -267,6 +268,52 @@ router.get('/api/course/work_list_submissions', async (req, res) => {
       res.json({ isLogin: true });
     }
   } catch (err) {
+    res.json({ isLogin: false });
+  }
+});
+
+router.get('/api/course/full_rank', async (req, res) => {
+  try {
+    const decode = await jwt.verify(req.cookies.jwt, config.JWTsecret);
+    oAuth2Client.setCredentials(decode);
+    try {
+      const rankOfCourse = await getRankOfCourse(
+        oAuth2Client,
+        req.query.course_id
+      );
+      // const array = [];
+      // await test.forEach(async (promis) => {
+      //   await promis.then(async (value) => {
+      //     await array.push(value);
+      //   });
+      // });
+
+      // const results = await Promise.all(
+      //   test.map(async (promis) => {
+      //     return await promis.then(async (value) => value);
+      //   })
+      // );
+      res.json(rankOfCourse);
+
+      // const coursesWorkList = await getCourseWorkList(
+      //   oAuth2Client,
+      //   req.query.course_id
+      // );
+      // let testArray = [];
+      // const courseWork = coursesWorkList.courseWork;
+      // await courseWork.forEach(async (work) => {
+      //   let rankByWork = await getWorkListSubmissions(
+      //     req.query.course_id,
+      //     work.id
+      //     );
+      //   testArray.push(...rankByWork.studentSubmissions);
+      // });
+      // console.log(testArray);
+    } catch (err) {
+      console.error(err);
+    }
+  } catch (err) {
+    console.error(err);
     res.json({ isLogin: false });
   }
 });

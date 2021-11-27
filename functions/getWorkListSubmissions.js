@@ -21,7 +21,6 @@ async function getWorkListSubmissions(courseId, courseWorkId) {
             reject({ error: 'The API returned an error: ' + err });
             return;
           }
-          console.log(res.data);
           resolve(res.data);
         }
       );
