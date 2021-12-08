@@ -12,6 +12,9 @@ const getWorkListSubmissions = require('../functions/getWorkListSubmissions');
 const getCourseWorkList = require('../functions/getCourseWorkList');
 const getUserProfileByServer = require('../functions/getUserProfileByServer');
 const getRankOfCourse = require('../functions/getRankOfCourse');
+const genRankByScore = require('../functions/genRankByScore');
+const sortArrayByObjVal = require('../functions/sortArrayByObjVal');
+const createArrayFromObjInArr = require('../functions/createArrayFromObjInArr');
 
 const getStudent = (auth, resRouter, ids) => {
   const classroom = google.classroom({ version: 'v1', auth });
@@ -281,34 +284,14 @@ router.get('/api/course/full_rank', async (req, res) => {
         oAuth2Client,
         req.query.course_id
       );
-      // const array = [];
-      // await test.forEach(async (promis) => {
-      //   await promis.then(async (value) => {
-      //     await array.push(value);
-      //   });
-      // });
+      const sortedRank = sortArrayByObjVal(
+        genRankByScore(
+          sortArrayByObjVal(createArrayFromObjInArr(rankOfCourse), 'userId')
+        ),
+        'mean'
+      ).reverse();
 
-      // const results = await Promise.all(
-      //   test.map(async (promis) => {
-      //     return await promis.then(async (value) => value);
-      //   })
-      // );
-      res.json(rankOfCourse);
-
-      // const coursesWorkList = await getCourseWorkList(
-      //   oAuth2Client,
-      //   req.query.course_id
-      // );
-      // let testArray = [];
-      // const courseWork = coursesWorkList.courseWork;
-      // await courseWork.forEach(async (work) => {
-      //   let rankByWork = await getWorkListSubmissions(
-      //     req.query.course_id,
-      //     work.id
-      //     );
-      //   testArray.push(...rankByWork.studentSubmissions);
-      // });
-      // console.log(testArray);
+      res.json(sortedRank);
     } catch (err) {
       console.error(err);
     }
