@@ -43,16 +43,6 @@ const getTeacher = (auth, resRouter, ids) => {
   );
 };
 
-// const getCourseWorkList = (auth, resRouter, id) => {
-//   const classroom = google.classroom({ version: 'v1', auth });
-//   classroom.courses.courseWork.list({ courseId: id }, (err, res) => {
-//     if (err) {
-//       resRouter.json({ error: `Bad id or server error: ${err}` });
-//     } else {
-//       resRouter.json(res.data);
-//     }
-//   });
-// };
 const getCourseWorkSubmisionList = (auth, resRouter, ids) => {
   const classroom = google.classroom({ version: 'v1', auth });
   classroom.courses.courseWork.studentSubmissions.list(
@@ -228,44 +218,40 @@ router.get('/api/course/work_list', async (req, res) => {
     console.error(err);
     res.json(err);
   }
-  // if (req.cookies.jwt) {
-  //   if (req.query.course_id) {
-  //     oAuth2Client.setCredentials(decode);
-
-  //     // getCourseWorkList(oAuth2Client, res, req.query.course_id);
-  //   }
-  // }
 });
 
 router.get('/api/course/work_list_submissions', async (req, res) => {
   try {
     await jwt.verify(req.cookies.jwt, config.JWTsecret);
-
     try {
       const googleCourseWorkListSubmissions = await getWorkListSubmissions(
         req.query.course_id,
         req.query.course_work_id
       );
+      console.log(`some new ${googleCourseWorkListSubmissions}`);
 
       // create new array of objects with sorting by assigned grade
-      const CourseWorkListSubmissions =
-        googleCourseWorkListSubmissions.studentSubmissions
-          .map((work) => {
-            return {
-              id: work.id,
-              assignedGrade: work.assignedGrade,
-              userId: work.userId,
-            };
-          })
-          .sort((a, b) =>
-            a.assignedGrade < b.assignedGrade
-              ? 1
-              : b.assignedGrade < a.assignedGrade
-              ? -1
-              : 0
-          );
-
-      res.json({ isLogin: true, rank: CourseWorkListSubmissions });
+      if (googleCourseWorkListSubmissions.studentSubmissions) {
+        const courseWorkListSubmissions =
+          googleCourseWorkListSubmissions.studentSubmissions
+            .map((work) => {
+              return {
+                id: work.id,
+                assignedGrade: work.assignedGrade,
+                userId: work.userId,
+              };
+            })
+            .sort((a, b) =>
+              a.assignedGrade < b.assignedGrade
+                ? 1
+                : b.assignedGrade < a.assignedGrade
+                ? -1
+                : 0
+            );
+        res.json({ isLogin: true, rank: courseWorkListSubmissions });
+      } else {
+        res.json({ isLogin: true, rank: [] });
+      }
     } catch (err) {
       console.error(err);
       res.json({ isLogin: true });
